@@ -1,0 +1,37 @@
+Project Title: SwingVote Analytics – Legislative Analysis & Persuasion Tool
+Goal:
+Create a Python (Flask) web application that identifies "swing" politicians on recent US Congressional bills and generates basic persuasion strategies.
+Tech Stack Requirements:
+• Backend: Python 3 (Flask)
+• Data Source: ProPublica Congress API (I will provide the API key as an environment variable PROPUBLICA_API_KEY).
+• Frontend: HTML/TailwindCSS (via Jinja2 templates) for a clean, modern dashboard.
+• Data Storage: SQLite (using SQLAlchemy) to cache legislators and bills to avoid hitting API rate limits.
+Core Features to Implement:
+1. Data Ingestion (ingest.py or within main.py):
+• Create a function fetch_recent_bills() that hits the ProPublica API endpoint for "recent active bills."
+• Create a function fetch_senate_members() to get the current list of senators, their party, and their state.
+• Critical: Store the "Votes with Party Pct" field provided by the API. This is our baseline for loyalty.
+2. The "Swing Detection" Logic:
+• Create a route /analyze/<bill_id>.
+• When analyzing a bill, mock a "predicted vote" scenario (since we can't predict the future yet, use the Senator's votes_with_party_pct as a proxy).
+• Algorithm:
+• If votes_with_party_pct > 95%: Label as "Loyalist" (Hard No/Yes).
+• If votes_with_party_pct is between 80% and 95%: Label as "Leaning".
+• If votes_with_party_pct < 80%: Label as "TRUE SWING" (High Priority Target).
+3. The Strategy Generator (Simple Rule-Based AI):
+• Create a function generate_strategy(senator_name, party, state, loyalty_score).
+• Logic:
+• If Party = Republican and Swing = True: Output "Angle: Economic Liberty & District Jobs. Contact via Chamber of Commerce."
+• If Party = Democrat and Swing = True: Output "Angle: Social Protection & Union Support. Contact via Local Labor Leaders."
+• If State = "WV" or "AZ" (Manchin/Sinema types): Output "HIGH VALUE. Requires direct donor outreach."
+4. Frontend Interface:
+• Home Page: A table of recent bills. Columns: Bill ID, Title, Latest Action, "Volatility Score" (calculated by number of swing voters involved).
+• Bill Detail Page:
+• Top: Bill Summary.
+• Middle: A "Whip Count" visual (Progress bar showing Yes vs No vs Swing).
+• Bottom: A list of "Swing Senators" for this bill. Each card should have a button "Generate Strategy" that reveals the text from step 3.
+Deliverables:
+• Please write the full main.py application code.
+• Create the templates/base.html, templates/index.html, and templates/bill_detail.html using TailwindCSS via CDN.
+• Create a requirements.txt file.
+• Ensure the code handles API errors gracefully (e.g., if the key is missing, show a mock data mode).
