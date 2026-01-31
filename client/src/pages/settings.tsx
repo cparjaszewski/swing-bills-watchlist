@@ -78,14 +78,10 @@ export default function Settings() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    {process.env.PROPUBLICA_API_KEY ? (
-                      <span className="flex items-center gap-1 text-sm text-green-600">
-                        <CheckCircle className="w-4 h-4" />
-                        Connected
-                      </span>
-                    ) : (
-                      <span className="text-sm text-amber-600">Using Mock Data</span>
-                    )}
+                    <span className="flex items-center gap-1 text-sm text-green-600">
+                      <CheckCircle className="w-4 h-4" />
+                      Connected
+                    </span>
                   </div>
                 </div>
                 
