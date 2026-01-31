@@ -1,5 +1,18 @@
 import { db } from "./db";
-import { members, bills, type Member, type InsertMember, type Bill, type InsertBill } from "@shared/schema";
+import { 
+  members, 
+  bills, 
+  topics,
+  userPreferences,
+  type Member, 
+  type InsertMember, 
+  type Bill, 
+  type InsertBill,
+  type Topic,
+  type InsertTopic,
+  type UserPreferences,
+  type InsertUserPreferences
+} from "@shared/schema";
 import { eq } from "drizzle-orm";
 
 export interface IStorage {
@@ -12,6 +25,12 @@ export interface IStorage {
   getBill(id: string): Promise<Bill | undefined>;
   createBill(bill: InsertBill): Promise<Bill>;
   updateBill(id: string, bill: Partial<InsertBill>): Promise<Bill>;
+
+  getTopics(): Promise<Topic[]>;
+  createTopic(topic: InsertTopic): Promise<Topic>;
+
+  getPreferences(sessionId: string): Promise<UserPreferences | undefined>;
+  savePreferences(prefs: InsertUserPreferences): Promise<UserPreferences>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -63,6 +82,31 @@ export class DatabaseStorage implements IStorage {
       .where(eq(bills.id, id))
       .returning();
     return updated;
+  }
+
+  async getTopics(): Promise<Topic[]> {
+    return await db.select().from(topics);
+  }
+
+  async createTopic(insertTopic: InsertTopic): Promise<Topic> {
+    const [topic] = await db.insert(topics).values(insertTopic).onConflictDoUpdate({
+        target: topics.name,
+        set: insertTopic
+    }).returning();
+    return topic;
+  }
+
+  async getPreferences(sessionId: string): Promise<UserPreferences | undefined> {
+    const [prefs] = await db.select().from(userPreferences).where(eq(userPreferences.sessionId, sessionId));
+    return prefs;
+  }
+
+  async savePreferences(prefs: InsertUserPreferences): Promise<UserPreferences> {
+    const [saved] = await db.insert(userPreferences).values(prefs).onConflictDoUpdate({
+        target: userPreferences.sessionId,
+        set: { ...prefs, updatedAt: new Date() }
+    }).returning();
+    return saved;
   }
 }
 

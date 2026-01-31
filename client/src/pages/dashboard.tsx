@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
-import { FileText, Users, TrendingUp, AlertCircle, RefreshCw } from "lucide-react";
+import { FileText, Users, TrendingUp, AlertCircle, RefreshCw, Sparkles, ArrowRight, Settings2 } from "lucide-react";
 import { Layout } from "@/components/layout";
 import { useBills, useBillAnalysis, useSyncBills } from "@/hooks/use-bills";
+import { usePreferences } from "@/hooks/use-preferences";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -53,12 +54,22 @@ function StatCard({
 
 export default function Dashboard() {
   const { data: bills, isLoading: billsLoading } = useBills();
+  const { data: preferences, isLoading: prefsLoading } = usePreferences();
   const { mutate: syncBills, isPending: isSyncing } = useSyncBills();
   
   const firstBillId = bills?.[0]?.id;
   const { data: firstAnalysis } = useBillAnalysis(firstBillId || "");
 
-  const totalBills = bills?.length || 0;
+  const selectedTopics = preferences?.selectedTopics || [];
+  const hasOnboarded = preferences?.onboardingComplete === true;
+
+  const filteredBills = bills?.filter(bill => {
+    if (selectedTopics.length === 0) return true;
+    const billTopics = bill.topics || [];
+    return billTopics.some(t => selectedTopics.includes(t));
+  }) || [];
+
+  const totalBills = filteredBills.length;
   const totalSenators = firstAnalysis?.senators?.length || 0;
   const swingSenators = firstAnalysis?.senators?.filter(s => s.status === "Swing").length || 0;
   const leaningSenators = firstAnalysis?.senators?.filter(s => s.status === "Leaning").length || 0;
@@ -66,6 +77,50 @@ export default function Dashboard() {
   return (
     <Layout>
       <div className="space-y-8">
+        {!prefsLoading && !hasOnboarded && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
+              <CardContent className="flex flex-col md:flex-row items-center justify-between gap-4 p-6">
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center">
+                    <Sparkles className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">Personalize Your Experience</h3>
+                    <p className="text-muted-foreground">Select topics you care about to filter relevant legislation.</p>
+                  </div>
+                </div>
+                <Link href="/onboarding">
+                  <Button className="gap-2" data-testid="button-start-onboarding">
+                    Get Started
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {hasOnboarded && selectedTopics.length > 0 && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm text-muted-foreground">Filtering by:</span>
+            {selectedTopics.map(topic => (
+              <Badge key={topic} variant="secondary" className="bg-primary/10 text-primary">
+                {topic}
+              </Badge>
+            ))}
+            <Link href="/onboarding">
+              <Button variant="ghost" size="sm" className="gap-1 text-muted-foreground" data-testid="button-edit-topics">
+                <Settings2 className="w-3 h-3" />
+                Edit
+              </Button>
+            </Link>
+          </div>
+        )}
+
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-1">
             <h1 className="text-3xl md:text-4xl text-primary" data-testid="text-dashboard-title">Dashboard</h1>
@@ -144,7 +199,7 @@ export default function Dashboard() {
                       <Skeleton key={i} className="h-16 w-full" />
                     ))}
                   </div>
-                ) : bills?.slice(0, 5).map((bill) => (
+                ) : filteredBills.slice(0, 5).map((bill) => (
                   <Link href={`/bills/${bill.id}`} key={bill.id}>
                     <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer" data-testid={`card-bill-${bill.id}`}>
                       <div className="flex-1 min-w-0">
@@ -155,8 +210,12 @@ export default function Dashboard() {
                     </div>
                   </Link>
                 ))}
-                {bills?.length === 0 && (
-                  <p className="text-muted-foreground text-center py-8">No bills available. Click sync to fetch data.</p>
+                {filteredBills.length === 0 && (
+                  <p className="text-muted-foreground text-center py-8">
+                    {selectedTopics.length > 0 
+                      ? "No bills match your selected topics." 
+                      : "No bills available. Click sync to fetch data."}
+                  </p>
                 )}
               </CardContent>
             </Card>

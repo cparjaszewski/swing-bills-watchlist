@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { members, bills, insertMemberSchema, insertBillSchema } from './schema';
+import { members, bills, topics, userPreferences } from './schema';
 
 export const api = {
   bills: {
@@ -41,6 +41,56 @@ export const api = {
          200: z.object({ message: z.string() }),
        }
     }
+  },
+  topics: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/topics',
+      responses: {
+        200: z.array(z.custom<typeof topics.$inferSelect>()),
+      },
+    },
+  },
+  preferences: {
+    get: {
+      method: 'GET' as const,
+      path: '/api/preferences',
+      responses: {
+        200: z.custom<typeof userPreferences.$inferSelect | null>(),
+      },
+    },
+    save: {
+      method: 'POST' as const,
+      path: '/api/preferences',
+      input: z.object({
+        selectedTopics: z.array(z.string()),
+        votePreference: z.string().optional(),
+        onboardingComplete: z.boolean().optional(),
+      }),
+      responses: {
+        200: z.custom<typeof userPreferences.$inferSelect>(),
+      },
+    },
+  },
+  email: {
+    draft: {
+      method: 'POST' as const,
+      path: '/api/email/draft',
+      input: z.object({
+        senatorId: z.string(),
+        billId: z.string(),
+        voteIntention: z.enum(["YES", "NO"]),
+      }),
+      responses: {
+        200: z.object({
+          subject: z.string(),
+          body: z.string(),
+          senatorName: z.string(),
+          billTitle: z.string(),
+        }),
+        500: z.object({ message: z.string() }),
+      },
+    },
   },
 };
 

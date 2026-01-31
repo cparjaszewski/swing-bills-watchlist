@@ -8,11 +8,13 @@ import Dashboard from "@/pages/dashboard";
 import Home from "@/pages/home";
 import BillDetails from "@/pages/bill-details";
 import Settings from "@/pages/settings";
+import Onboarding from "@/pages/onboarding";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
+      <Route path="/onboarding" component={Onboarding} />
       <Route path="/bills" component={Home} />
       <Route path="/bills/:id" component={BillDetails} />
       <Route path="/settings" component={Settings} />
