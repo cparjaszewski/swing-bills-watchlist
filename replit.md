@@ -59,3 +59,4 @@ The app runs on port 5000 with `npm run dev`. Frontend and backend are served to
 - Implemented AI-powered email drafting with OpenAI integration
 - Dashboard shows personalization banner and filters bills by selected topics
 - Senator cards have "Draft Email" button for quick email generation
+- Added custom interests text field in onboarding for free-form input that AI considers when drafting emails

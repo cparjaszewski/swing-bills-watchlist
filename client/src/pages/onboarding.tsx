@@ -16,10 +16,12 @@ import {
   Wheat,
   ArrowRight,
   Check,
-  Sparkles
+  Sparkles,
+  MessageSquare
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
 import { useTopics, useSavePreferences } from "@/hooks/use-preferences";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
@@ -54,6 +56,7 @@ export default function Onboarding() {
   const { mutate: savePreferences, isPending } = useSavePreferences();
   const { toast } = useToast();
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
+  const [customInterests, setCustomInterests] = useState("");
   const [step, setStep] = useState(1);
 
   const toggleTopic = (topicName: string) => {
@@ -79,6 +82,7 @@ export default function Onboarding() {
       savePreferences(
         { 
           selectedTopics, 
+          customInterests: customInterests.trim() || undefined,
           onboardingComplete: true 
         },
         {
@@ -210,8 +214,31 @@ export default function Onboarding() {
               </div>
             )}
 
+            <Card className="max-w-2xl mx-auto">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <MessageSquare className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <h3 className="font-medium text-sm">Don't see your interest?</h3>
+                    <p className="text-xs text-muted-foreground">
+                      Tell us in your own words what issues matter to you. Our AI will consider this when drafting emails.
+                    </p>
+                    <Textarea
+                      placeholder="e.g., I care about local small business support, veterans' mental health services, and affordable childcare..."
+                      value={customInterests}
+                      onChange={(e) => setCustomInterests(e.target.value)}
+                      className="min-h-[80px] text-sm"
+                      data-testid="textarea-custom-interests"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             <p className="text-center text-sm text-muted-foreground">
-              Selected: {selectedTopics.length} topic{selectedTopics.length !== 1 ? 's' : ''}
+              Selected: {selectedTopics.length} topic{selectedTopics.length !== 1 ? 's' : ''}{customInterests.trim() ? ' + custom interests' : ''}
             </p>
           </motion.div>
         ) : (
@@ -233,6 +260,12 @@ export default function Onboarding() {
                     </span>
                   ))}
                 </div>
+                {customInterests.trim() && (
+                  <div className="pt-2 border-t">
+                    <h4 className="text-sm font-medium mb-2">Your custom interests:</h4>
+                    <p className="text-sm text-muted-foreground italic">"{customInterests.trim()}"</p>
+                  </div>
+                )}
               </div>
               
               <div className="space-y-2 text-sm text-muted-foreground">

@@ -33,6 +33,7 @@ export function useSavePreferences() {
   return useMutation({
     mutationFn: async (data: { 
       selectedTopics: string[]; 
+      customInterests?: string;
       votePreference?: string; 
       onboardingComplete?: boolean;
     }) => {

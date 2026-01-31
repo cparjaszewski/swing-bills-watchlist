@@ -64,6 +64,7 @@ export const api = {
       path: '/api/preferences',
       input: z.object({
         selectedTopics: z.array(z.string()),
+        customInterests: z.string().optional(),
         votePreference: z.string().optional(),
         onboardingComplete: z.boolean().optional(),
       }),

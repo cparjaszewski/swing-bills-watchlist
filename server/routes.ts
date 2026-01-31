@@ -163,7 +163,8 @@ const hasOpenAICredentials = !!(process.env.AI_INTEGRATIONS_OPENAI_API_KEY && pr
 async function generateEmailDraft(
   senator: Member, 
   bill: Bill, 
-  voteIntention: "YES" | "NO"
+  voteIntention: "YES" | "NO",
+  customInterests?: string | null
 ): Promise<{ subject: string; body: string }> {
   const partyName = senator.party === "D" ? "Democrat" : senator.party === "R" ? "Republican" : "Independent";
   const loyaltyDescription = senator.votesWithPartyPct > 95 
@@ -205,7 +206,11 @@ BILL INFORMATION:
 - Summary: ${bill.summary || "No summary available"}
 
 YOUR GOAL: Convince the Senator to vote ${voteIntention} on this bill.
-
+${customInterests ? `
+ADDITIONAL CONTEXT FROM SENDER:
+The sender has expressed these personal interests and concerns: "${customInterests}"
+Incorporate these interests into your persuasive argument where relevant.
+` : ''}
 Write a professional, persuasive email that:
 1. Opens with a respectful greeting appropriate for a Senator
 2. Acknowledges their known positions or concerns based on their party and state
@@ -270,13 +275,15 @@ export async function registerRoutes(
   });
 
   app.get(api.bills.get.path, async (req, res) => {
-    const bill = await storage.getBill(req.params.id);
+    const id = req.params.id as string;
+    const bill = await storage.getBill(id);
     if (!bill) return res.status(404).json({ message: "Bill not found" });
     res.json(bill);
   });
 
   app.get(api.bills.analyze.path, async (req, res) => {
-    const bill = await storage.getBill(req.params.id);
+    const id = req.params.id as string;
+    const bill = await storage.getBill(id);
     if (!bill) return res.status(404).json({ message: "Bill not found" });
 
     const allMembers = await storage.getMembers();
@@ -330,6 +337,7 @@ export async function registerRoutes(
       const prefs = await storage.savePreferences({
         sessionId,
         selectedTopics: input.selectedTopics,
+        customInterests: input.customInterests,
         votePreference: input.votePreference,
         onboardingComplete: input.onboardingComplete,
       });
@@ -345,6 +353,7 @@ export async function registerRoutes(
   app.post(api.email.draft.path, async (req, res) => {
     try {
       const input = api.email.draft.input.parse(req.body);
+      const sessionId = req.headers['x-session-id'] as string || 'default';
       
       const senator = await storage.getMember(input.senatorId);
       if (!senator) {
@@ -356,7 +365,8 @@ export async function registerRoutes(
         return res.status(404).json({ message: "Bill not found" });
       }
 
-      const { subject, body } = await generateEmailDraft(senator, bill, input.voteIntention);
+      const prefs = await storage.getPreferences(sessionId);
+      const { subject, body } = await generateEmailDraft(senator, bill, input.voteIntention, prefs?.customInterests);
 
       res.json({
         subject,

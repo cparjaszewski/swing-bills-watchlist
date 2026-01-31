@@ -36,6 +36,7 @@ export const userPreferences = pgTable("user_preferences", {
   id: serial("id").primaryKey(),
   sessionId: text("session_id").notNull().unique(),
   selectedTopics: text("selected_topics").array(),
+  customInterests: text("custom_interests"),
   votePreference: text("vote_preference"),
   onboardingComplete: boolean("onboarding_complete").default(false),
   createdAt: timestamp("created_at").defaultNow(),
