@@ -106,7 +106,7 @@ export default function BillDetails() {
                   <Button variant="ghost" size="sm">Filter by Party</Button>
                 </div>
               </div>
-              <SenatorList senators={senators} billId={id} />
+              <SenatorList senators={senators} billId={id} bill={bill} />
             </div>
           </TabsContent>
 

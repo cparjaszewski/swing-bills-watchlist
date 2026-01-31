@@ -62,3 +62,4 @@ The app runs on port 5000 with `npm run dev`. Frontend and backend are served to
 - Added custom interests text field in onboarding for free-form input that AI considers when drafting emails
 - Redesigned dashboard with feed-style alert cards showing volatility spikes, whip count shifts, swing probability alerts
 - Added quick stats sidebar and severity filter tabs (Critical, Moderate, Info)
+- Enhanced "View Analysis" with sophisticated senator analytics including voting history, influence factors, demographics, and persuasion strategies
